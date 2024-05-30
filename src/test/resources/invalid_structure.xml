@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <Product id="2">
+        <Name>orange</Name>
+        <Category>fruit</Category>
+    </Active>
+    </Product>
+    <Product id="3">
+        <Name>glass</Name>
+        <Category>dish</Category>
+        <PartNumberNR>9999-E7R-Q-M-K287B-YH</PartNumberNR>
+        <CompanyName>HomeHome</CompanyName>
+        <Active>true</Active>
+    </Product>
+</Products>

@@ -4,9 +4,11 @@ import com.gpcglobaltechnologycenter.internship_project.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.xml.bind.JAXBException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -20,12 +22,12 @@ public class ProductController {
     }
 
 
-    @PostMapping("/upload")
+    @PostMapping(value = "/upload", consumes = "multipart/form-data")
     @Operation(summary = "Upload XML file and load products", description = "Reads the XML file from the given file path and returns the number of records found in the file.")
-    public ResponseEntity<String> loadProducts(@RequestParam String filePath) throws FileNotFoundException,JAXBException {
-        int numberOfProducts = productService.readProductsFromFile(filePath);
+    public ResponseEntity<String> loadProducts(
+            @RequestPart("file") MultipartFile file) throws IOException, JAXBException {
+        int numberOfProducts = productService.readProductsFromFile(file);
         return ResponseEntity.ok("Number of records found in file " + numberOfProducts);
-
     }
 
     @GetMapping

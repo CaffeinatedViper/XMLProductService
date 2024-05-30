@@ -17,4 +17,4 @@ This Spring Boot project is designed to demonstrate the importing and management
 - `GET /api/products/search?name={product_name}`: Returns information about a product with the specified name.
 ## Documentation
 
-For more detailed information about the project and endpoint descriptions, refer to the Swagger documentation available after starting the application at `http://localhost:8080/swagger-ui.html`.
+For more detailed information about the project and endpoint descriptions, refer to the Swagger documentation available after starting the application at http://localhost:8080/swagger-ui.html. Use this documentation for testing and exploring the available API endpoints interactively.

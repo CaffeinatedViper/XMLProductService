@@ -11,9 +11,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 
 import javax.xml.bind.JAXBException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,29 +37,29 @@ public class ProductControllerTest {
     }
 
     @Test
-    void testLoadProducts() throws FileNotFoundException, JAXBException {
-        String filePath = "test-file-path.xml";
-        when(productService.readProductsFromFile(filePath)).thenReturn(10);
-        ResponseEntity<String> response = productController.loadProducts(filePath);
+    void testLoadProducts() throws IOException, JAXBException {
+        MockMultipartFile mockFile = new MockMultipartFile("file", "test-file.xml", "text/xml", "<products></products>".getBytes());
+        when(productService.readProductsFromFile(mockFile)).thenReturn(10);
+        ResponseEntity<String> response = productController.loadProducts(mockFile);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Number of records found in file 10", response.getBody());
     }
 
     @Test
-    void testLoadProducts_FileNotFoundException() throws FileNotFoundException, JAXBException {
-        String filePath = "invalid-file-path.xml";
-        when(productService.readProductsFromFile(filePath)).thenThrow(new FileNotFoundException("File not found"));
-        assertThrows(FileNotFoundException.class, () -> {
-            productController.loadProducts(filePath);
+    void testLoadProducts_EmptyFile() throws IOException, JAXBException {
+        MockMultipartFile mockFile = new MockMultipartFile("file", "test-file.xml", "text/xml", new byte[0]);
+        when(productService.readProductsFromFile(mockFile)).thenThrow(new IOException("Uploaded file is empty."));
+        assertThrows(IOException.class, () -> {
+            productController.loadProducts(mockFile);
         });
     }
 
     @Test
-    void testLoadProducts_JAXBException() throws FileNotFoundException, JAXBException {
-        String filePath = "invalid-file.xml";
-        when(productService.readProductsFromFile(filePath)).thenThrow(new JAXBException("Invalid XML"));
+    void testLoadProducts_JAXBException() throws IOException, JAXBException {
+        MockMultipartFile mockFile = new MockMultipartFile("file", "invalid-file.xml", "text/xml", "<invalid></invalid>".getBytes());
+        when(productService.readProductsFromFile(mockFile)).thenThrow(new JAXBException("Invalid XML"));
         assertThrows(JAXBException.class, () -> {
-            productController.loadProducts(filePath);
+            productController.loadProducts(mockFile);
         });
     }
 

@@ -8,13 +8,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
-
+import org.springframework.web.multipart.MultipartFile;
 import javax.xml.bind.JAXBException;
-
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,36 +22,45 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ProductServiceTests {
 
-
     @Autowired
     private ProductService productService;
 
-    private String validFilePath;
-    private String invalidFilePath;
+    private MultipartFile validFile;
+    private MultipartFile invalidFile;
 
     @BeforeEach
-    public void setUp() {
-        validFilePath = "src/test/resources/products.xml";
-        invalidFilePath = "src/test/resources/invalid_products.xml";
+    public void setUp() throws IOException {
+        FileInputStream validFileInputStream = new FileInputStream("src/test/resources/products.xml");
+        validFile = new MockMultipartFile("file", "products.xml", "text/xml", validFileInputStream);
 
+        FileInputStream invalidFileInputStream = new FileInputStream("src/test/resources/invalid_structure.xml");
+        invalidFile = new MockMultipartFile("file", "invalid_structure.xml", "text/xml", invalidFileInputStream);
     }
 
     @Test
-    public void testReadProductsFromFile_Success() throws FileNotFoundException, JAXBException {
-        int count = productService.readProductsFromFile(validFilePath);
+    public void testReadProductsFromFile_Success() throws IOException, JAXBException {
+        int count = productService.readProductsFromFile(validFile);
         assertEquals(3, count, "The number of products should be 3");
     }
 
     @Test
     public void testReadProductsFromFile_FileNotFound() {
-        assertThrows(FileNotFoundException.class, () -> {
-            productService.readProductsFromFile(invalidFilePath);
+        MultipartFile emptyFile = new MockMultipartFile("file", "empty.xml", "text/xml", new byte[0]);
+        assertThrows(IOException.class, () -> {
+            productService.readProductsFromFile(emptyFile);
         });
     }
 
     @Test
-    public void testGetAllProducts_Success() throws FileNotFoundException, JAXBException {
-        productService.readProductsFromFile(validFilePath);
+    public void testReadProductsFromFile_InvalidStructure() {
+        assertThrows(JAXBException.class, () -> {
+            productService.readProductsFromFile(invalidFile);
+        });
+    }
+
+    @Test
+    public void testGetAllProducts_Success() throws IOException, JAXBException {
+        productService.readProductsFromFile(validFile);
         List<Product> products = productService.getAllProducts();
         assertEquals(3, products.size(), "The number of products should be 3");
 
@@ -67,15 +76,15 @@ public class ProductServiceTests {
     }
 
     @Test
-    public void testGetProductByName_Success() throws FileNotFoundException, JAXBException {
-        productService.readProductsFromFile(validFilePath);
+    public void testGetProductByName_Success() throws IOException, JAXBException {
+        productService.readProductsFromFile(validFile);
         Product product = productService.getProductByName("apple");
         assertEquals("apple", product.getName(), "The name of the product should be 'apple'");
     }
 
     @Test
-    public void testGetProductByName_NotFound() throws FileNotFoundException, JAXBException {
-        productService.readProductsFromFile(validFilePath);
+    public void testGetProductByName_NotFound() throws IOException, JAXBException {
+        productService.readProductsFromFile(validFile);
         assertThrows(ProductNotFoundException.class, () -> {
             productService.getProductByName("nonexistent");
         });
